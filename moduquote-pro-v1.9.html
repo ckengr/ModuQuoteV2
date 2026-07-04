@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>ModuQuote Pro v1.9.3</title>
+  <title>ModuQuote Pro v2.0</title>
   <style>
     :root{
       --bg:#F5EFE6;--panel:#EFE6D8;--panel-2:#F8F4EE;--primary:#5A3E2B;--primary-2:#8B6A4E;
@@ -95,6 +95,35 @@
     .status-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#8B6A4E;margin-right:6px}
     .tiny-note{font-size:11px;color:#7a6e62}
     @media (max-width: 840px){.app{grid-template-columns:1fr}.sidebar{position:static;height:auto}.g2,.g3,.g4,.g5,.compact-grid,.dash-controls,.print-controls{grid-template-columns:1fr}.topbar{position:static}.field.compact{grid-template-columns:1fr}}
+
+    /* v1.9.4 compact UI refinements */
+    body{font-size:14px}
+    .card{padding:14px}
+    input,select,textarea{padding:8px 10px;font-size:13px}
+    textarea{min-height:70px}
+    .btn{padding:8px 11px;font-size:13px}
+    table{font-size:12.5px}
+    th{font-size:11px;white-space:nowrap}
+    th,td{padding:7px 6px}
+    td input,td select{font-size:12px;padding:6px 7px}
+    .field.compact{grid-template-columns:92px 1fr;gap:8px}
+    .field.compact label{font-size:10.5px;line-height:1.2}
+    label{font-size:11px}
+    .total-box .value{font-size:18px}
+    .grand{font-size:22px}
+    .quick-range{font-size:22px}
+    .pill{font-size:11px;padding:4px 8px}
+    .brand .big{font-size:22px}
+    .line-mode{white-space:nowrap}
+    .client-desc{white-space:pre-line;line-height:1.5;font-size:13px;margin:10px 0 18px;border-left:3px solid var(--primary);padding-left:12px}
+
+
+    .budgetary-builder{display:grid;gap:12px}
+    .budgetary-table th,.budgetary-table td{white-space:nowrap}
+    .budgetary-table td.desc-cell{white-space:normal;min-width:180px}
+    .budgetary-table input,.budgetary-table select{min-width:90px}
+    .budgetary-table input.desc-input{min-width:170px}
+
     @media print{.sidebar,.topbar,.no-print,.screen:not(#screen-print){display:none!important} body{background:#fff}.main,.content,.screen,.screen.active{display:block!important;padding:0;margin:0}.card{box-shadow:none;border:none;padding:0;background:#fff}.print-wrap{border:none;padding:0}}
   </style>
 </head>
@@ -110,7 +139,6 @@
       <button class="nav-btn" data-screen="project"><span>📝</span><span class="label">Project Setup</span></button>
       <button class="nav-btn project-only" data-screen="builder"><span>🧾</span><span class="label">Cost Builder</span></button>
       <button class="nav-btn project-only" data-screen="summary"><span>📊</span><span class="label">Summary</span></button>
-      <button class="nav-btn project-only" data-screen="quick"><span>⚡</span><span class="label">Quick Estimate</span></button>
       <button class="nav-btn project-only" data-screen="boq"><span>📦</span><span class="label">BOQ</span></button>
       <button class="nav-btn project-only" data-screen="print"><span>🖨</span><span class="label">Print</span></button>
       <button class="nav-btn project-only" data-screen="accounting"><span>💰</span><span class="label">Accounting</span></button>
@@ -123,9 +151,8 @@
       <div class="top-left"><button class="btn ghost icon-btn" id="toggleSidebarBtn" title="Toggle menu">☰</button>
         <div class="chip"><strong id="topProjectName">No Active Project</strong></div>
         <select id="topPricingMode" class="select chip project-only" disabled>
-          <option value="materials">Materials + Labor</option>
-          <option value="labor_only">Labor Only</option>
-          <option value="estimate">Budgetary Estimate</option>
+          <option value="materials">Detailed Costing</option>
+          <option value="estimate">Budgetary Pricing</option>
         </select>
         <div class="status" id="saveState">Ready</div>
       </div>
@@ -189,7 +216,11 @@
             <div class="field"><label>Project Lead Time (days)</label><input id="leadTimeDays" type="number" min="0" step="1" /></div>
             <div class="field"><label>Currency</label><input id="currency" value="PHP" /></div>
             <div class="field"><label>Prepared By</label><input id="createdBy" value="" /></div>
-            <div class="field"><label>Pricing Mode <span class="has-tip"><span class="tip-icon">i</span><span class="tip">Materials + Labor includes all direct costs. Labor Only excludes material and accessory costs from the final selling price. Budgetary Estimate is for quick pricing.</span></span></label><select id="projectPricingMode"><option value="materials">Materials + Labor</option><option value="labor_only">Labor Only</option><option value="estimate">Budgetary Estimate</option></select></div>
+            <div class="field"><label>Pricing Method <span class="has-tip"><span class="tip-icon">i</span><span class="tip">Detailed Costing is for accurate production costing. Budgetary Pricing is for fast client estimates using linear-meter settings.</span></span></label><select id="projectPricingMode"><option value="materials">Detailed Costing</option><option value="estimate">Budgetary Pricing</option></select></div>
+          </div>
+          <div class="field" style="margin-top:14px">
+            <label>Project Description / Scope of Works</label>
+            <textarea id="projectDescription" style="min-height:110px" placeholder="Describe the project scope to be shown before the item list in the client quotation."></textarea>
           </div>
           <div class="card" style="margin-top:14px;background:var(--panel-2)">
             <h3 style="margin-bottom:10px">Commercial Status</h3>
@@ -335,7 +366,7 @@
               <button type="button" class="settings-nav-btn active" data-settings-panel="general">General</button>
               <button type="button" class="settings-nav-btn" data-settings-panel="company">Company</button>
               <button type="button" class="settings-nav-btn" data-settings-panel="pricing">Pricing</button>
-              <button type="button" class="settings-nav-btn" data-settings-panel="quick">Quick Estimate</button>
+              <button type="button" class="settings-nav-btn" data-settings-panel="quick">Budgetary Rates</button>
               <button type="button" class="settings-nav-btn" data-settings-panel="presets">Presets</button>
               <button type="button" class="settings-nav-btn" data-settings-panel="clauses">Clauses</button>
               <button type="button" class="settings-nav-btn" data-settings-panel="data">Data Source</button>
@@ -384,10 +415,18 @@
                 <div class="field"><label>Default Contingency %</label><input id="defaultContingencyPercent" type="number" min="0" step="0.01" /></div>
                 <div class="field"><label>Default Markup %</label><input id="defaultMarkupPercent" type="number" min="0" step="0.01" /></div>
               </div>
+              <div class="setting-group" style="margin-top:16px">
+                <h3>Client Item Pricing</h3>
+                <label class="pill"><input id="distributeClientItemPricing" type="checkbox"> &nbsp;Distribute project-level costs into client item prices</label>
+                <div class="grid g2" style="margin-top:10px">
+                  <div class="field"><label>Allocation Method</label><select id="clientItemPricingMethod"><option value="proportional">Proportional to item cost</option><option value="equal">Equal distribution</option></select></div>
+                </div>
+                <div class="setting-note">When enabled, the hidden project-level costs are distributed to the item rows so the client's item amounts equal the final project total.</div>
+              </div>
             </div>
 
             <div class="card settings-panel" id="settings-panel-quick">
-              <h2>Quick Estimate</h2>
+              <h2>Budgetary Rates</h2>
               <div class="setting-group">
                 <div class="grid g2">
                   <div class="field">
@@ -456,8 +495,9 @@
                 <div class="field"><label><input id="printShowTerms" type="checkbox"> Show terms and conditions</label></div>
                 <div class="field"><label><input id="printCompactTables" type="checkbox"> Compact tables</label></div>
                 <div class="field"><label><input id="printShowRemarks" type="checkbox"> Show remarks where available</label></div>
+                <div class="field"><label>Quotation Detail Level</label><select id="quotationDetailLevel"><option value="itemized">Itemized with Unit Prices</option><option value="lump_area">Lump Sum Per Area</option><option value="single_total">Single Total Project Price</option></select></div>
               </div>
-              <div class="setting-note">Use these to tighten the print layout for quotations, BOQ, and internal costing sheets.</div>
+              <div class="setting-note">Use these to tighten the print layout for quotations, BOQ, and internal costing sheets. Client quotations now include Qty, Unit Price, and Amount.</div>
             </div>
 
             <div class="card settings-panel" id="settings-panel-interface">
@@ -506,7 +546,7 @@
     {name:'Handle',specification:'Standard',unit:'pc',unitCost:120},
     {name:'Pull-out Basket',specification:'Standard',unit:'set',unitCost:2800}
   ];
-  const defaultSettings=()=>({sheetUrl:'',appsScriptUrl:'',defaultSidebarState:'expanded',defaultLiveTotalsState:'expanded',autoSave:true,companyName:'',companyAddress:'',companyContact:'',companyEmail:'',companyWebsite:'',defaultLaborPercent:40,defaultSopPercent:5,defaultContingencyPercent:10,defaultMarkupPercent:20,qeRateBase:8000,qeRateOverhead:6000,qeRateTall:12000,qeTierLow:0.85,qeTierMid:1,qeTierHigh:1.25,qeFinishLaminated:1,qeFinishPainted:1.3,qeCountertopPerLm:5000,qeSpecialHardwarePercent:15,qeRangePercent:10,qeOutputMode:'range',defaultTerms:'',categoryListText:builtInCategories.join('\n'),categoryPresetsText:JSON.stringify(builtInCategoryPresets,null,2),clauseLibraryText:'Payment Terms::50% downpayment before fabrication.\n---\nBalance Terms::Balance payable upon completion and prior to turnover.',materialMasterJson:JSON.stringify(builtInMaterials),accessoryMasterJson:JSON.stringify(builtInAccessories),printShowMeta:true,printShowTerms:true,printCompactTables:false,printShowRemarks:false});
+  const defaultSettings=()=>({sheetUrl:'',appsScriptUrl:'',defaultSidebarState:'expanded',defaultLiveTotalsState:'expanded',autoSave:true,companyName:'',companyAddress:'',companyContact:'',companyEmail:'',companyWebsite:'',defaultLaborPercent:40,defaultSopPercent:5,defaultContingencyPercent:10,defaultMarkupPercent:20,qeRateBase:8000,qeRateOverhead:6000,qeRateTall:12000,qeTierLow:0.85,qeTierMid:1,qeTierHigh:1.25,qeFinishLaminated:1,qeFinishPainted:1.3,qeCountertopPerLm:5000,qeSpecialHardwarePercent:15,qeRangePercent:10,qeOutputMode:'range',defaultTerms:'',categoryListText:builtInCategories.join('\n'),categoryPresetsText:JSON.stringify(builtInCategoryPresets,null,2),clauseLibraryText:'Payment Terms::50% downpayment before fabrication.\n---\nBalance Terms::Balance payable upon completion and prior to turnover.',materialMasterJson:JSON.stringify(builtInMaterials),accessoryMasterJson:JSON.stringify(builtInAccessories),printShowMeta:true,printShowTerms:true,printCompactTables:false,printShowRemarks:false,distributeClientItemPricing:true,clientItemPricingMethod:'proportional',quotationDetailLevel:'itemized'});
   let appSettings = (()=>{ try{return Object.assign(defaultSettings(), JSON.parse(localStorage.getItem('moduquote_settings')||'{}'));}catch{return defaultSettings();} })();
   const saveAppSettings=()=>localStorage.setItem('moduquote_settings', JSON.stringify(appSettings));
   const safeJson=(txt,fallback)=>{ try{return JSON.parse(txt);}catch{return fallback;} };
@@ -590,7 +630,7 @@
   }
 
 
-  const defaultProject=()=>({id:uid('PROJ'),clientName:'',projectName:'',location:'',date:new Date().toISOString().slice(0,10),quoteNo:`MQ-${new Date().getFullYear()}-${String(Math.floor(Math.random()*900)+100)}`,revisionNo:0,status:'Draft',quoteValidityDays:7,leadTimeDays:7,currency:'PHP',createdBy:'',notes:'',terms:appSettings.defaultTerms||'',pricingMode:'materials',quoteStatus:'Draft',acceptedAmountMode:'quoted',contractAmount:0,acceptedDate:'',payments:[],settings:{monthlyOverhead:0,workingDaysPerMonth:26,hoursPerDay:8,fuelPricePerLiter:0,distanceKm:0,deliveryCount:1,kmPerLiter:7,minimumLogisticsCharge:0,sopPercent:appSettings.defaultSopPercent,contingencyPercent:appSettings.defaultContingencyPercent,markupPercent:appSettings.defaultMarkupPercent},quickEstimate:{cabinetType:'base',length:2400,height:900,depth:600,finish:'laminated',tier:'mid',withCountertop:false,withSpecialHardware:false},items:[]});
+  const defaultProject=()=>({id:uid('PROJ'),clientName:'',projectName:'',location:'',date:new Date().toISOString().slice(0,10),quoteNo:`MQ-${new Date().getFullYear()}-${String(Math.floor(Math.random()*900)+100)}`,revisionNo:0,status:'Draft',quoteValidityDays:7,leadTimeDays:7,currency:'PHP',createdBy:'',notes:'',description:'',terms:appSettings.defaultTerms||'',pricingMode:'materials',quoteStatus:'Draft',acceptedAmountMode:'quoted',contractAmount:0,acceptedDate:'',payments:[],settings:{monthlyOverhead:0,workingDaysPerMonth:26,hoursPerDay:8,fuelPricePerLiter:0,distanceKm:0,deliveryCount:1,kmPerLiter:7,minimumLogisticsCharge:0,sopPercent:appSettings.defaultSopPercent,contingencyPercent:appSettings.defaultContingencyPercent,markupPercent:appSettings.defaultMarkupPercent},quickEstimate:{cabinetType:'base',length:2400,height:900,depth:600,finish:'laminated',tier:'mid',withCountertop:false,withSpecialHardware:false},items:[]});
   let project=null; let draftProject=defaultProject(); let activeItemId=null; let itemTab='materials'; let dirty=false; let liveCollapsed = appSettings.defaultLiveTotalsState==='collapsed';
 
   function markDirty(state=true){ dirty=state; byId('saveState').textContent=project? (state?'Unsaved changes':'Saved') : 'Ready'; }
@@ -668,13 +708,13 @@
     const s=calcProject();
     byId('topProjectName').textContent=project ? (project.projectName||'Untitled Project') : 'No Active Project';
     byId('dashProject').textContent=project ? (project.projectName||'Untitled Project') : 'None'; byId('dashItems').textContent=project?project.items.length:0;
-    byId('dashMode').textContent=project ? ({materials:'Materials + Labor',labor_only:'Labor Only',estimate:'Budgetary Estimate'})[project.pricingMode] : '-';
+    byId('dashMode').textContent=project ? ({materials:'Detailed Costing',labor_only:'Labor Only',estimate:'Budgetary Pricing'})[project.pricingMode] : '-';
     byId('topFinalPrice').textContent=money(s.final); byId('dashFinal').textContent=money(s.final); byId('summaryFinalPrice').textContent=money(s.final); enableProjectMode(!!project);
     if(project) byId('topPricingMode').value=project.pricingMode;
   }
 
   function bindDraftFields(){
-    const map={clientName:'clientName',projectName:'projectName',location:'projectLocation',date:'projectDate',quoteNo:'quoteNo',revisionNo:'revisionNo',status:'projectStatus',quoteValidityDays:'quoteValidityDays',leadTimeDays:'leadTimeDays',currency:'currency',createdBy:'createdBy',notes:'projectNotes',terms:'projectTerms',pricingMode:'projectPricingMode',quoteStatus:'quoteStatus',acceptedAmountMode:'acceptedAmountMode',contractAmount:'contractAmount',acceptedDate:'acceptedDate'};
+    const map={clientName:'clientName',projectName:'projectName',location:'projectLocation',date:'projectDate',quoteNo:'quoteNo',revisionNo:'revisionNo',status:'projectStatus',quoteValidityDays:'quoteValidityDays',leadTimeDays:'leadTimeDays',currency:'currency',createdBy:'createdBy',notes:'projectNotes',description:'projectDescription',terms:'projectTerms',pricingMode:'projectPricingMode',quoteStatus:'quoteStatus',acceptedAmountMode:'acceptedAmountMode',contractAmount:'contractAmount',acceptedDate:'acceptedDate'};
     Object.entries(map).forEach(([key,id])=>{ const el=byId(id); el.value=draftProject[key]??''; el.oninput=()=>{ draftProject[key]=(el.type==='number'? num(el.value):el.value); }; el.onchange=el.oninput; }); const modeEl=byId('acceptedAmountMode'); const amtEl=byId('contractAmount'); const statusEl=byId('quoteStatus'); const syncContractUi=()=>{ amtEl.disabled=(modeEl.value!=='custom'); if(modeEl.value!=='custom'){ const temp=deepCopy(draftProject); temp.acceptedAmountMode='quoted'; draftProject.contractAmount=calcProjectFor(temp).final||0; amtEl.value=draftProject.contractAmount||0; } if(statusEl.value!=='Accepted'){ draftProject.acceptedDate=''; byId('acceptedDate').value=''; } }; if(modeEl) modeEl.onchange=()=>{ draftProject.acceptedAmountMode=modeEl.value; syncContractUi(); }; if(statusEl) statusEl.onchange=()=>{ draftProject.quoteStatus=statusEl.value; syncContractUi(); }; syncContractUi();
   }
   function setDraftFromProject(){ draftProject=project?deepCopy(project):defaultProject(); bindDraftFields(); }
@@ -686,7 +726,7 @@
   function createProjectFromSetup(){
     if(project && dirty && !confirm('Save current project before leaving it?')) return;
     if(project && dirty) saveProjectToLibrary();
-    project=deepCopy(draftProject); if(!project.id) project.id=uid('PROJ'); if(!project.items) project.items=[]; if(!project.payments) project.payments=[]; if(!project.quoteStatus) project.quoteStatus='Draft'; if(!project.acceptedAmountMode) project.acceptedAmountMode='quoted'; if(project.contractAmount==null) project.contractAmount=0; if(!project.quickEstimate) project.quickEstimate=defaultProject().quickEstimate; activeItemId=project.items[0]?.id||null; markDirty(false); persistActiveProject(); render(); go(project.pricingMode==='estimate'?'quick':'builder');
+    project=deepCopy(draftProject); if(!project.id) project.id=uid('PROJ'); if(!project.items) project.items=[]; if(!project.payments) project.payments=[]; if(!project.quoteStatus) project.quoteStatus='Draft'; if(!project.acceptedAmountMode) project.acceptedAmountMode='quoted'; if(project.contractAmount==null) project.contractAmount=0; if(!project.quickEstimate) project.quickEstimate=defaultProject().quickEstimate; activeItemId=project.items[0]?.id||null; markDirty(false); persistActiveProject(); render(); go('builder');
   }
   function exitProject(){ if(!project) return go('dashboard'); if(dirty && confirm('Save current project before exiting?')) saveProjectToLibrary(); else if(dirty && !confirm('Exit without saving?')) return; project=null; activeItemId=null; localStorage.removeItem('moduquote_active'); draftProject=defaultProject(); bindDraftFields(); markDirty(false); render(); go('dashboard'); }
 
@@ -697,11 +737,89 @@
   function removeItem(id){ project.items=project.items.filter(i=>i.id!==id); if(activeItemId===id) activeItemId=project.items[0]?.id||null; markDirty(); render(); }
   function applyCategoryPreset(item, category){ const preset=currentCategoryPresets()[category]; if(!preset) return; if(item.materials.length===0) item.materials=deepCopy(preset.materials||[]); if(item.accessories.length===0) item.accessories=deepCopy(preset.accessories||[]); }
 
-  function renderItemList(){ const wrap=byId('itemList'); if(!project?.items.length){ wrap.innerHTML='<div class="empty">No items yet. Add your first cabinet, wardrobe, vanity, or other scope item.</div>'; return;} wrap.innerHTML=project.items.map((item,idx)=>{ const s=calcItem(item); return `<div class="item-row ${item.id===activeItemId?'active':''}" data-item="${item.id}"><div class="space"><strong>${idx+1}. ${escapeHtml(item.name)}</strong><span class="pill">${money(s.itemTotal)}</span></div><div class="muted">${escapeHtml(item.category)}${item.location?' • '+escapeHtml(item.location):''}</div><div class="row"><span class="pill">Qty ${escapeHtml(String(item.qty||1))}</span><button class="btn ghost" data-delete-item="${item.id}">Delete</button></div></div>`; }).join('');
+  function renderItemList(){ const wrap=byId('itemList'); if(!project?.items.length){ wrap.innerHTML='<div class="empty">No items yet. Add your first item.</div>'; return;} if(project.pricingMode==='estimate'){ wrap.innerHTML=`<div class="toolbar"><h3>Budgetary Items</h3><button class="btn primary" id="sideAddBudgetaryBtn">+ Add</button></div>` + project.items.map((item,idx)=>{ const x=calcEstimateItem(item); return `<div class="item-row ${item.id===activeItemId?'active':''}" data-item="${item.id}"><div class="space"><strong>${idx+1}. ${escapeHtml(item.name)}</strong></div><div class="muted">${estimateDisplay(x.total,x.lowTotal,x.highTotal)}</div></div>`; }).join(''); const b=byId('sideAddBudgetaryBtn'); if(b) b.onclick=addItem; wrap.querySelectorAll('[data-item]').forEach(el=>el.onclick=()=>{ activeItemId=el.dataset.item; render(); }); return;} wrap.innerHTML=project.items.map((item,idx)=>{ const s=calcItem(item); return `<div class="item-row ${item.id===activeItemId?'active':''}" data-item="${item.id}"><div class="space"><strong>${idx+1}. ${escapeHtml(item.name)}</strong><span class="pill">${money(s.itemTotal)}</span></div><div class="muted">${escapeHtml(item.category)}${item.location?' • '+escapeHtml(item.location):''}</div><div class="row"><span class="pill">Qty ${escapeHtml(String(item.qty||1))}</span><button class="btn ghost" data-delete-item="${item.id}">Delete</button></div></div>`; }).join('');
     wrap.querySelectorAll('[data-item]').forEach(el=>el.onclick=e=>{ if(e.target.closest('[data-delete-item]')) return; activeItemId=el.dataset.item; renderItemEditor(); renderItemList(); renderLiveTotals(); });
     wrap.querySelectorAll('[data-delete-item]').forEach(btn=>btn.onclick=e=>{ e.stopPropagation(); removeItem(btn.dataset.deleteItem); }); }
 
-  function renderItemEditor(){ const wrap=byId('itemEditor'); const item=currentItem(); if(!item){ wrap.innerHTML='<div class="empty">Select or add an item to begin costing.</div>'; byId('builderItemTitle').textContent='Item Details'; byId('itemTotalPill').textContent=money(0); return; }
+
+  function renderBudgetaryBuilder(){
+    const wrap=byId('itemEditor');
+    if(!wrap) return;
+    byId('builderItemTitle').textContent='Budgetary Pricing';
+    const s=calcProject();
+    byId('itemTotalPill').textContent=estimateDisplay(s.final,s.quick?.low||0,s.quick?.high||0);
+    if(!project.items.length){
+      wrap.innerHTML='<div class="empty">No budgetary items yet. Click + Add Item to create a fast estimate row.</div>';
+      return;
+    }
+    wrap.innerHTML=`
+      <div class="budgetary-builder">
+        <div class="toolbar">
+          <div>
+            <h3 style="margin:0">Budgetary Pricing Table</h3>
+            <div class="muted tiny">Fast estimate only. No materials, accessories, or labor breakdowns.</div>
+          </div>
+          <button class="btn primary" id="budgetaryAddRowBtn">+ Add Estimate Row</button>
+        </div>
+        <div style="overflow:auto">
+          <table class="budgetary-table">
+            <thead>
+              <tr>
+                <th>Description</th><th>Type</th><th>Length</th><th>Height</th><th>Depth</th><th>Qty</th><th>Finish</th><th>Tier</th><th>Countertop</th><th>Special HW</th><th>Unit Price</th><th>Amount</th><th></th>
+              </tr>
+            </thead>
+            <tbody>
+              ${project.items.map((item,idx)=>{
+                if(!item.estimate) item.estimate=defaultEstimateFields();
+                const x=calcEstimateItem(item);
+                return `<tr>
+                  <td class="desc-cell"><input class="desc-input" data-bq="name" data-idx="${idx}" value="${escapeAttr(item.name||'')}"></td>
+                  <td><select data-bq="cabinetType" data-idx="${idx}"><option value="base" ${item.estimate.cabinetType==='base'?'selected':''}>Base</option><option value="overhead" ${item.estimate.cabinetType==='overhead'?'selected':''}>Overhead</option><option value="tall" ${item.estimate.cabinetType==='tall'?'selected':''}>Tall</option></select></td>
+                  <td><input data-bq="width" data-idx="${idx}" type="number" value="${escapeAttr(item.width||0)}"></td>
+                  <td><input data-bq="height" data-idx="${idx}" type="number" value="${escapeAttr(item.height||0)}"></td>
+                  <td><input data-bq="depth" data-idx="${idx}" type="number" value="${escapeAttr(item.depth||0)}"></td>
+                  <td><input data-bq="qty" data-idx="${idx}" type="number" min="1" step="1" value="${escapeAttr(item.qty||1)}"></td>
+                  <td><select data-bq="finish" data-idx="${idx}"><option value="laminated" ${item.estimate.finish==='laminated'?'selected':''}>Laminated</option><option value="painted" ${item.estimate.finish==='painted'?'selected':''}>Painted</option></select></td>
+                  <td><select data-bq="tier" data-idx="${idx}"><option value="low" ${item.estimate.tier==='low'?'selected':''}>Low</option><option value="mid" ${item.estimate.tier==='mid'?'selected':''}>Mid</option><option value="high" ${item.estimate.tier==='high'?'selected':''}>High</option></select></td>
+                  <td style="text-align:center"><input data-bq="withCountertop" data-idx="${idx}" type="checkbox" ${item.estimate.withCountertop?'checked':''}></td>
+                  <td style="text-align:center"><input data-bq="withSpecialHardware" data-idx="${idx}" type="checkbox" ${item.estimate.withSpecialHardware?'checked':''}></td>
+                  <td>${estimateDisplay(x.total/x.qty,x.lowTotal/x.qty,x.highTotal/x.qty)}</td>
+                  <td><strong>${estimateDisplay(x.total,x.lowTotal,x.highTotal)}</strong></td>
+                  <td><button class="btn ghost" data-bq-delete="${idx}">Delete</button></td>
+                </tr>`;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+        <div class="quick-result">
+          <div class="space"><span>Budgetary Total</span><strong class="grand">${estimateDisplay(s.final,s.quick?.low||0,s.quick?.high||0)}</strong></div>
+        </div>
+      </div>`;
+    byId('budgetaryAddRowBtn').onclick=addItem;
+    wrap.querySelectorAll('[data-bq]').forEach(el=>{
+      el.oninput=el.onchange=()=>{
+        const item=project.items[Number(el.dataset.idx)];
+        if(!item) return;
+        if(!item.estimate) item.estimate=defaultEstimateFields();
+        const field=el.dataset.bq;
+        if(field==='name') item.name=el.value;
+        else if(field==='width'||field==='height'||field==='depth') item[field]=num(el.value);
+        else if(field==='qty') item.qty=Math.max(1,parseInt(el.value||1,10));
+        else if(field==='cabinetType'||field==='finish'||field==='tier') item.estimate[field]=el.value;
+        else if(field==='withCountertop'||field==='withSpecialHardware') item.estimate[field]=el.checked;
+        markDirty();
+        render();
+      };
+    });
+    wrap.querySelectorAll('[data-bq-delete]').forEach(btn=>btn.onclick=()=>{
+      project.items.splice(Number(btn.dataset.bqDelete),1);
+      activeItemId=project.items[0]?.id||null;
+      markDirty();
+      render();
+    });
+  }
+
+  function renderItemEditor(){ const wrap=byId('itemEditor'); if(project?.pricingMode==='estimate'){ renderBudgetaryBuilder(); return; } const item=currentItem(); if(!item){ wrap.innerHTML='<div class="empty">Select or add an item to begin costing.</div>'; byId('builderItemTitle').textContent='Item Details'; byId('itemTotalPill').textContent=money(0); return; }
     const s=calcItem(item); byId('builderItemTitle').textContent=item.name||'Item Details'; byId('itemTotalPill').textContent=money(s.itemTotal);
     const categories=currentCategories(); const m=getMeasures(item);
     wrap.innerHTML=`
@@ -783,11 +901,92 @@
   function syncPrintPrefToggles(){
     ['printShowMeta','printShowTerms','printCompactTables','printShowRemarks'].forEach(id=>{ const el=byId(id), quick=byId(id+'Quick'); if(el && quick){ quick.checked=!!appSettings[id]; quick.onchange=()=>{ appSettings[id]=quick.checked; if(el) el.checked=quick.checked; saveAppSettings(); renderPrint(); }; } });
   }
+
+  function itemBaseForClient(item){
+    if(!item) return 0;
+    if(project?.pricingMode==='estimate'){
+      return calcEstimateItem(item).total;
+    }
+    return calcItem(item).itemTotal;
+  }
+
+  function clientItemAmounts(){
+    if(!project) return [];
+    const s=calcProject();
+    const items=project.items||[];
+    if(!items.length) return [];
+    const bases=items.map(item=>Math.max(0,itemBaseForClient(item)));
+    const totalBase=bases.reduce((a,b)=>a+b,0);
+    const method=appSettings.clientItemPricingMethod || 'proportional';
+    const distribute=!!appSettings.distributeClientItemPricing;
+    return items.map((item,idx)=>{
+      const qty=Math.max(1,num(item.qty||1));
+      let amount=bases[idx];
+      if(distribute){
+        let share;
+        if(method==='equal' || totalBase<=0) share=1/items.length;
+        else share=bases[idx]/totalBase;
+        amount=s.final*share;
+      }
+      const unit=amount/qty;
+      return {item,qty,amount,unit,base:bases[idx]};
+    });
+  }
+
+  function clientEstimateAmounts(){
+    if(!project) return [];
+    const items=project.items||[];
+    if(!items.length) return [];
+    const stats=calcProject().itemStats || [];
+    return stats.map(x=>{
+      const qty=Math.max(1,num(x.item.qty||1));
+      return {
+        item:x.item,
+        qty,
+        amount:x.total,
+        unit:x.total/qty,
+        low:x.lowTotal,
+        high:x.highTotal,
+        unitLow:x.lowTotal/qty,
+        unitHigh:x.highTotal/qty
+      };
+    });
+  }
+
+  function renderClientDescription(){
+    if(!project || !(project.description||'').trim()) return '';
+    return `<h3>Project Description</h3><div class="client-desc">${escapeHtml(project.description)}</div>`;
+  }
+
+  function renderClientQuotationRows(){
+    if(!project) return '';
+    const level=appSettings.quotationDetailLevel || 'itemized';
+    const s=calcProject();
+    if(level==='single_total'){
+      return `<table><thead><tr><th>Description</th><th>Amount</th></tr></thead><tbody><tr><td>Complete modular cabinet works for ${escapeHtml(project.projectName||'project')}</td><td>${project.pricingMode==='estimate' ? estimateDisplay(s.final,s.quick?.low||0,s.quick?.high||0) : money(s.final)}</td></tr></tbody></table>`;
+    }
+    if(project.pricingMode==='estimate'){
+      const rows=clientEstimateAmounts();
+      return `<table><thead><tr><th>Qty</th><th>Description</th><th>Unit Price</th><th>Amount</th></tr></thead><tbody>${rows.map(x=>`<tr><td>${escapeHtml(String(x.qty))}</td><td>${escapeHtml(x.item.name||'Estimate Item')}${appSettings.printShowRemarks && x.item.remarks?`<div class="tiny-note">${escapeHtml(x.item.remarks)}</div>`:''}</td><td>${estimateDisplay(x.unit,x.unitLow,x.unitHigh)}</td><td>${estimateDisplay(x.amount,x.low,x.high)}</td></tr>`).join('')}</tbody></table>`;
+    }
+    const rows=clientItemAmounts();
+    if(level==='lump_area'){
+      const map=new Map();
+      rows.forEach(x=>{
+        const key=(x.item.location||x.item.category||'Cabinet Works').trim() || 'Cabinet Works';
+        const current=map.get(key)||{qty:0,amount:0};
+        current.qty+=1; current.amount+=x.amount; map.set(key,current);
+      });
+      return `<table><thead><tr><th>Qty</th><th>Description</th><th>Unit Price</th><th>Amount</th></tr></thead><tbody>${[...map.entries()].map(([name,x])=>`<tr><td>${x.qty}</td><td>${escapeHtml(name)}</td><td>${money(x.amount/x.qty)}</td><td>${money(x.amount)}</td></tr>`).join('')}</tbody></table>`;
+    }
+    return `<table><thead><tr><th>Qty</th><th>Description</th><th>Unit Price</th><th>Amount</th></tr></thead><tbody>${rows.map(x=>`<tr><td>${escapeHtml(String(x.qty))}</td><td>${escapeHtml(x.item.name)}${appSettings.printShowRemarks && x.item.remarks?`<div class="tiny-note">${escapeHtml(x.item.remarks)}</div>`:''}</td><td>${money(x.unit)}</td><td>${money(x.amount)}</td></tr>`).join('')}</tbody></table>`;
+  }
+
   function renderPrint(){ const mode=document.querySelector('input[name="printMode"]:checked')?.value||'internal'; if(!project){ byId('printView').innerHTML='<div class="empty">No active project.</div>'; return;} const s=calcProject(), boq=buildBoq(); const docTitle = mode==='client' ? 'Quotation' : (mode==='boq' ? 'Bill of Quantities' : 'Internal Costing Sheet'); const compactStyle=appSettings.printCompactTables?'font-size:12px':''; const metaBlock=appSettings.printShowMeta?`<div style="display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin:0 0 18px 0"><div><div><strong>Quote No:</strong> ${escapeHtml(project.quoteNo)}</div><div><strong>Date:</strong> ${escapeHtml(project.date)}</div><div><strong>Revision:</strong> ${escapeHtml(String(project.revisionNo))}</div></div><div style="text-align:right"><div><strong>Validity:</strong> ${escapeHtml(String(project.quoteValidityDays||0))} days</div><div><strong>Lead Time:</strong> ${escapeHtml(String(project.leadTimeDays||0))} days</div></div></div><div class="grid g3" style="margin-bottom:18px"><div><strong>Client:</strong><br>${escapeHtml(project.clientName||'-')}</div><div><strong>Project:</strong><br>${escapeHtml(project.projectName||'-')}</div><div><strong>Location:</strong><br>${escapeHtml(project.location||'-')}</div></div>`:''; const header=companyHeaderHtml(docTitle)+metaBlock;
     let body='';
     if(mode==='boq') body=`<h3>Purchase List / BOQ</h3>${boq.length?`<table style="${compactStyle}"><thead><tr><th>Description</th><th>Specification</th><th>Total Qty</th><th>Unit</th></tr></thead><tbody>${boq.map(r=>`<tr><td>${escapeHtml(r.description)}</td><td>${escapeHtml(r.specification||'')}</td><td>${r.qty}</td><td>${escapeHtml(r.unit||'')}</td></tr>`).join('')}</tbody></table>`:'<div>No BOQ rows.</div>'}`;
-    else if(mode==='client' && project.pricingMode==='estimate') body=`<h3>Budgetary Estimate</h3><table style="${compactStyle}"><thead><tr><th>Description</th><th>Qty</th><th>Estimated Amount</th></tr></thead><tbody>${s.itemStats.map(x=>`<tr><td>${escapeHtml(x.item.name||'Estimate Item')}${appSettings.printShowRemarks && x.item.remarks?`<div class="tiny-note">${escapeHtml(x.item.remarks)}</div>`:''}</td><td>${escapeHtml(String(x.item.qty||1))}</td><td>${estimateDisplay(x.total,x.lowTotal,x.highTotal)}</td></tr>`).join('')}</tbody></table><div style="margin-top:16px;text-align:right"><div class="muted">Budgetary output</div><div class="grand">${estimateDisplay(s.final,s.quick?.low||0,s.quick?.high||0)}</div><div class="tiny muted">Fixed basis: ${money(s.final)}</div></div>${appSettings.printShowTerms && (project.terms||'').trim()?`<div style="margin-top:28px"><h3 style="margin-bottom:10px">Terms &amp; Conditions</h3><div style="white-space:pre-line;line-height:1.6;font-size:13px">${escapeHtml(project.terms)}</div></div>`:''}`;
-    else if(mode==='client') body=`<h3>Client Quotation</h3><table style="${compactStyle}"><thead><tr><th>#</th><th>Item</th><th>Qty</th><th>Amount</th></tr></thead><tbody>${project.items.map((item,idx)=>`<tr><td>${idx+1}</td><td>${escapeHtml(item.name)}${appSettings.printShowRemarks && item.remarks?`<div class="tiny-note">${escapeHtml(item.remarks)}</div>`:''}</td><td>${escapeHtml(String(item.qty||1))}</td><td>${money(calcItem(item).itemTotal)}</td></tr>`).join('')}</tbody></table><div style="margin-top:16px;text-align:right"><div class="muted">Total Contract Price</div><div class="grand">${money(s.final)}</div></div>${appSettings.printShowTerms && (project.terms||'').trim()?`<div style="margin-top:28px"><h3 style="margin-bottom:10px">Terms &amp; Conditions</h3><div style="white-space:pre-line;line-height:1.6;font-size:13px">${escapeHtml(project.terms)}</div></div>`:''}`;
+    else if(mode==='client' && project.pricingMode==='estimate') body=`<h3>Budgetary Estimate</h3>${renderClientDescription()}${renderClientQuotationRows()}<div style="margin-top:16px;text-align:right"><div class="muted">Budgetary output</div><div class="grand">${estimateDisplay(s.final,s.quick?.low||0,s.quick?.high||0)}</div><div class="tiny muted">Fixed basis: ${money(s.final)}</div></div>${appSettings.printShowTerms && (project.terms||'').trim()?`<div style="margin-top:28px"><h3 style="margin-bottom:10px">Terms &amp; Conditions</h3><div style="white-space:pre-line;line-height:1.6;font-size:13px">${escapeHtml(project.terms)}</div></div>`:''}`;
+    else if(mode==='client') body=`<h3>Client Quotation</h3>${renderClientDescription()}${renderClientQuotationRows()}<div style="margin-top:16px;text-align:right"><div class="muted">Total Contract Price</div><div class="grand">${money(s.final)}</div></div>${appSettings.printShowTerms && (project.terms||'').trim()?`<div style="margin-top:28px"><h3 style="margin-bottom:10px">Terms &amp; Conditions</h3><div style="white-space:pre-line;line-height:1.6;font-size:13px">${escapeHtml(project.terms)}</div></div>`:''}`;
     else body=`<h3>Internal Costing Sheet</h3><table style="${compactStyle}"><thead><tr><th>#</th><th>Item</th><th>Materials</th><th>Accessories</th><th>Labor</th><th>Total</th></tr></thead><tbody>${project.items.map((item,idx)=>{ const x=calcItem(item); return `<tr><td>${idx+1}</td><td>${escapeHtml(item.name)}${appSettings.printShowRemarks && item.remarks?`<div class="tiny-note">${escapeHtml(item.remarks)}</div>`:''}</td><td>${project.pricingMode==='labor_only'?'Excluded':money(x.materialTotal)}</td><td>${project.pricingMode==='labor_only'?'Excluded':money(x.accessoryTotal)}</td><td>${money(x.laborTotal)}</td><td>${money(x.itemTotal)}</td></tr>`; }).join('')}</tbody></table><div style="margin-top:18px;display:grid;gap:8px;max-width:430px;margin-left:auto"><div class="space"><span>Direct Cost</span><strong>${project.pricingMode==='labor_only'?'Excluded':money(s.direct)}</strong></div><div class="space"><span>Labor</span><strong>${money(s.labor)}</strong></div><div class="space"><span>Logistics</span><strong>${money(s.logistics)}</strong></div><div class="space"><span>Overhead</span><strong>${money(s.overhead)}</strong></div><div class="space"><span>SOP</span><strong>${money(s.sop)}</strong></div><div class="space"><span>Contingency</span><strong>${money(s.contingency)}</strong></div><div class="space"><span>Markup</span><strong>${money(s.markup)}</strong></div><div class="space" style="border-top:2px solid var(--primary);padding-top:10px"><span><strong>Final Selling Price</strong></span><strong class="grand">${money(s.final)}</strong></div></div>`;
     byId('printView').innerHTML=header+body;
   }
@@ -813,7 +1012,7 @@
     dash.innerHTML=list.length?`<table class="dash-table"><thead><tr><th>Quote No</th><th>Client</th><th>Project</th><th>Status</th><th>Total</th></tr></thead><tbody>${list.map(p=>`<tr data-open="${p.id}"><td><strong>${escapeHtml(p.quoteNo||'')}</strong><div class="micro muted">${escapeHtml((p.savedAt||'').slice(0,10)||'')}</div></td><td>${escapeHtml(p.clientName||'-')}</td><td>${escapeHtml(p.projectName||'-')}</td><td><span class="status-dot"></span>${escapeHtml(p.quoteStatus||p.status||'-')}</td><td>${money(amountFor(p))}</td></tr>`).join('')}</tbody></table>`:'<div class="empty">No saved projects yet.</div>';
     dash.querySelectorAll('[data-open]').forEach(el=>el.onclick=()=>openProject(el.dataset.open));
   }
-  function openProject(id){ if(project && dirty && confirm('Save current project before opening another one?')) saveProjectToLibrary(); else if(project && dirty && !confirm('Open another project without saving current changes?')) return; const found=getSavedProjects().find(p=>p.id===id); if(!found) return; project=deepCopy(found); activeItemId=project.items[0]?.id||null; markDirty(false); setDraftFromProject(); localStorage.setItem('moduquote_active', JSON.stringify(project)); render(); go(project.pricingMode==='estimate'?'quick':'builder'); }
+  function openProject(id){ if(project && dirty && confirm('Save current project before opening another one?')) saveProjectToLibrary(); else if(project && dirty && !confirm('Open another project without saving current changes?')) return; const found=getSavedProjects().find(p=>p.id===id); if(!found) return; project=deepCopy(found); activeItemId=project.items[0]?.id||null; markDirty(false); setDraftFromProject(); localStorage.setItem('moduquote_active', JSON.stringify(project)); render(); go('builder'); }
 
   function getContractAmount(p=project){
     if(!p) return 0;
@@ -890,10 +1089,10 @@
     w.document.close(); w.focus(); w.print();
   }
   function renderSettings(){
-    const map={sheetUrl:'sheetUrl',sheetUrlData:'sheetUrl',appsScriptUrl:'appsScriptUrl',companyName:'companyName',companyAddress:'companyAddress',companyContact:'companyContact',companyEmail:'companyEmail',companyWebsite:'companyWebsite',defaultSidebarState:'defaultSidebarState',defaultLiveTotalsState:'defaultLiveTotalsState',defaultLaborPercent:'defaultLaborPercent',defaultSopPercent:'defaultSopPercent',defaultContingencyPercent:'defaultContingencyPercent',defaultMarkupPercent:'defaultMarkupPercent',qeRateBase:'qeRateBase',qeRateOverhead:'qeRateOverhead',qeRateTall:'qeRateTall',qeTierLow:'qeTierLow',qeTierMid:'qeTierMid',qeTierHigh:'qeTierHigh',qeFinishLaminated:'qeFinishLaminated',qeFinishPainted:'qeFinishPainted',qeCountertopPerLm:'qeCountertopPerLm',qeSpecialHardwarePercent:'qeSpecialHardwarePercent',qeRangePercent:'qeRangePercent',defaultTerms:'defaultTerms',categoryListText:'categoryListText',categoryPresetsText:'categoryPresetsText',clauseLibraryText:'clauseLibraryText'};
+    const map={sheetUrl:'sheetUrl',sheetUrlData:'sheetUrl',appsScriptUrl:'appsScriptUrl',companyName:'companyName',companyAddress:'companyAddress',companyContact:'companyContact',companyEmail:'companyEmail',companyWebsite:'companyWebsite',defaultSidebarState:'defaultSidebarState',defaultLiveTotalsState:'defaultLiveTotalsState',defaultLaborPercent:'defaultLaborPercent',defaultSopPercent:'defaultSopPercent',defaultContingencyPercent:'defaultContingencyPercent',defaultMarkupPercent:'defaultMarkupPercent',qeRateBase:'qeRateBase',qeRateOverhead:'qeRateOverhead',qeRateTall:'qeRateTall',qeTierLow:'qeTierLow',qeTierMid:'qeTierMid',qeTierHigh:'qeTierHigh',qeFinishLaminated:'qeFinishLaminated',qeFinishPainted:'qeFinishPainted',qeCountertopPerLm:'qeCountertopPerLm',qeSpecialHardwarePercent:'qeSpecialHardwarePercent',qeRangePercent:'qeRangePercent',defaultTerms:'defaultTerms',categoryListText:'categoryListText',categoryPresetsText:'categoryPresetsText',clauseLibraryText:'clauseLibraryText',clientItemPricingMethod:'clientItemPricingMethod',quotationDetailLevel:'quotationDetailLevel'};
     Object.entries(map).forEach(([k,id])=>{ const el=byId(id); if(!el) return; if(el.type==='checkbox') el.checked=!!appSettings[k]; else el.value=appSettings[k] ?? ''; const handler=()=>{ appSettings[k]=el.type==='number'?num(el.value):(el.type==='checkbox'?el.checked:el.value); saveAppSettings(); if(k==='defaultLiveTotalsState') liveCollapsed=appSettings.defaultLiveTotalsState==='collapsed'; applyLayoutState(); render(); }; el.oninput=handler; el.onchange=handler; });
     const auto=byId('autoSaveToggle'); if(auto){ auto.checked=!!appSettings.autoSave; auto.onchange=()=>{ appSettings.autoSave=auto.checked; saveAppSettings(); }; }
-    ['printShowMeta','printShowTerms','printCompactTables','printShowRemarks'].forEach(id=>{ const el=byId(id); if(el){ el.checked=!!appSettings[id]; el.onchange=()=>{ appSettings[id]=el.checked; saveAppSettings(); syncPrintPrefToggles(); renderPrint(); }; }});
+    ['printShowMeta','printShowTerms','printCompactTables','printShowRemarks','distributeClientItemPricing'].forEach(id=>{ const el=byId(id); if(el){ el.checked=!!appSettings[id]; el.onchange=()=>{ appSettings[id]=el.checked; saveAppSettings(); syncPrintPrefToggles(); renderPrint(); }; }});
     syncPrintPrefToggles();
     const fixed=byId('qeOutputModeFixed'), range=byId('qeOutputModeRange');
     if(fixed && range){ fixed.checked=appSettings.qeOutputMode==='fixed'; range.checked=appSettings.qeOutputMode!=='fixed'; [fixed,range].forEach(r=>r.onchange=()=>{ if(r.checked){ appSettings.qeOutputMode=r.value; saveAppSettings(); render(); }}); }
@@ -938,7 +1137,7 @@
     const lib=currentClauseLibrary(); sel.innerHTML='<option value="">Select clause to insert</option>' + lib.map((c,i)=>`<option value="${i}">${escapeHtml(c.title)}</option>`).join('');
   }
   function render(){ bindDraftFields(); renderClauseSelect(); renderItemList(); renderItemEditor(); renderLiveTotals(); renderSummary(); renderQuickEstimate(); renderBoq(); renderPrint(); renderAccounting(); renderSavedProjects(); renderSettings(); syncTop(); applyLayoutState(); }
-  function go(name){ if(!project && ['builder','summary','quick','boq','print'].includes(name)) return; document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); byId(`screen-${name}`).classList.add('active'); document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active', b.dataset.screen===name)); }
+  function go(name){ if(!project && ['builder','summary','boq','print','accounting'].includes(name)) return; if(name==='quick') name='builder'; document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); byId(`screen-${name}`).classList.add('active'); document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active', b.dataset.screen===name)); }
 
   document.querySelectorAll('.nav-btn').forEach(btn=>btn.onclick=()=>{ if(btn.disabled||btn.classList.contains('disabled')) return; if(btn.dataset.screen==='dashboard' && project){ if(confirm('Exit current project and go back to Dashboard?')) exitProject(); return; } go(btn.dataset.screen); });
   byId('dashboardNewBtn').onclick=()=>{ draftProject=defaultProject(); bindDraftFields(); go('project'); };
